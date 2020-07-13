@@ -25,7 +25,7 @@ install:
   - pip install numpy
   - pip install scipy
   - pip install matplotlib
-
+  - pip install nose-timer
   # install TensorFlow
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.5" && "$TENSORFLOW_V" == "1.8.0" ]]; then
       pip install https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.8.0-cp35-cp35m-linux_x86_64.whl;
@@ -65,7 +65,7 @@ script:
   - sed -i -e 's/"backend":[[:space:]]*"[^"]*/"backend":\ "'$KERAS_BACKEND'/g' ~/.keras/keras.json;
   - echo -e "Running tests with the following config:\n$(cat ~/.keras/keras.json)"
   # test for evaluation infrastructure are very fast, so running them first
-  - nosetests -v --nologcapture -w examples/nips17_adversarial_competition/eval_infra/code/ eval_lib/tests/
+  - nosetests --with-timer -v --nologcapture -w examples/nips17_adversarial_competition/eval_infra/code/ eval_lib/tests/
   #
   # --nologcapture: avoids a large amount of unnecessary tensorflow output
   # --stop: stop on first error. Gives feedback from travis faster
@@ -73,14 +73,14 @@ script:
   # Tests for certification code require Tensorflow 1.9 or higher,
   # thus skipping these tests for lower version of Tensorflow.
   - if [[ "$PYTORCH" == True ]]; then
-      nosetests --nologcapture -v --stop cleverhans/future/torch/tests;
+      nosetests --with-timer --nologcapture -v --stop cleverhans/future/torch/tests;
     elif [[ "$PYTORCH" == False ]]; then
       if [[ "$TENSORFLOW_V" == "1.8.0" ]]; then
-        nosetests -v --nologcapture --stop --exclude-dir=cleverhans/experimental/certification cleverhans;
+        nosetests -v --with-timer --nologcapture --stop --exclude-dir=cleverhans/experimental/certification cleverhans;
       else
-        nosetests -v --nologcapture --stop cleverhans;
+        nosetests -v --with-timer --nologcapture --stop cleverhans;
       fi;
       for test_path in tests_tf/*.py ; do
-        nosetests --nocapture -v --stop $test_path;
+        nosetests --with-timer --nocapture -v --stop $test_path;
       done
     fi
